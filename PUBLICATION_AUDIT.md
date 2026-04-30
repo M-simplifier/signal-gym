@@ -2,6 +2,9 @@
 
 Date: 2026-04-30
 
+Repository: https://github.com/M-simplifier/signal-gym
+Pages: https://m-simplifier.github.io/signal-gym/
+
 ## Public Boundary
 
 Included:
@@ -55,4 +58,5 @@ Known local path:
 - No longitudinal user data exists yet.
 - The app has not been externally validated.
 - `npm audit --omit=dev` reports 0 production vulnerabilities. Full dev audit still reports transitive installer issues under the PureScript npm package; they do not ship in the static SPA artifact.
-- GitHub Pages must be verified after the first deploy workflow completes.
+- The first GitHub Pages deploy was verified with HTTP 200 and a live Playwright screenshot pass.
+- GitHub Actions currently emits a Node.js 20 action-runtime deprecation warning for upstream actions. The workflows pass; revisit action major versions when their Node 24-compatible releases are available.
