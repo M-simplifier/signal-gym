@@ -12,6 +12,7 @@ import SignalGym.Training (Mode(..), Stage(..))
 main :: Effect Unit
 main = do
   testSessionStarts
+  testSeededSessionsVary
   testCorrectAnswerScores
   testProfileCompletion
 
@@ -23,6 +24,24 @@ testSessionStarts = do
 
   assert (Training.roundCount session == 12)
   assert (session.stage == Encoding)
+
+testSeededSessionsVary :: Effect Unit
+testSeededSessionsVary = do
+  let
+    first =
+      Training.startSessionWithSeed Training.emptyProfile GateOnly 111
+
+    second =
+      Training.startSessionWithSeed Training.emptyProfile GateOnly 222
+
+  case Training.currentRound first, Training.currentRound second of
+    Just a, Just b -> do
+      assert (a.id /= b.id)
+      assert (a.domain /= "")
+      assert (b.domain /= "")
+
+    _, _ ->
+      assert false
 
 testCorrectAnswerScores :: Effect Unit
 testCorrectAnswerScores = do

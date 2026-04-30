@@ -6,6 +6,7 @@ Implemented:
 
 - PureScript/Asterism SPA
 - Three playable training drills
+- Expanded synthetic exercise corpus with local session randomization
 - Adaptive per-drill levels
 - Local progress persistence
 - Static build for GitHub Pages
