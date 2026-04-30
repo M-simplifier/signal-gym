@@ -30,6 +30,16 @@ The loop should feel closer to guitar/Rubik repetition than school worksheets: i
 - Local persistence is enough for v0.
 - Public text must distinguish near-task practice from far-transfer claims.
 
+## Drill Separation
+
+The drill names must not hide the task contract.
+
+- `Claim Gate`: an audit loop: evidence, risky claim, stop decision.
+- `Trace Stack`: a sequence loop: ordered tokens, mask, target recall.
+- `Dense Read`: a reading loop: dense passage, hidden text, memory answer.
+
+If two drills feel like the same multiple-choice surface, the UI has failed even if the answer data differs.
+
 ## Rejected But Valuable
 
 - User-imported AI documents: high transfer value, but needs privacy and prompt-safety design.
