@@ -238,7 +238,7 @@ answerCurrent selected session =
             { correct: wasCorrect
             , selected
             , gain
-            , label: if wasCorrect then "Held" else "Dropped"
+            , label: feedbackLabel round.drill wasCorrect
             , rationale: round.rationale
             }
         in
@@ -330,6 +330,15 @@ addDrillResult drill wasCorrect session =
       Trace -> session { trace = add session.trace }
       Read -> session { read = add session.read }
 
+feedbackLabel :: Drill -> Boolean -> String
+feedbackLabel drill correct = case drill, correct of
+  Gate, true -> "Stopped"
+  Gate, false -> "Leaked"
+  Trace, true -> "Held"
+  Trace, false -> "Dropped"
+  Read, true -> "Recalled"
+  Read, false -> "Lost"
+
 generateRounds :: Profile -> Mode -> Array Round
 generateRounds profile mode =
   map (\i -> roundFor profile mode i) (Array.range 0 (totalRounds mode - 1))
@@ -369,15 +378,15 @@ levelForDrill profile drill = case drill of
 modeLabel :: Mode -> String
 modeLabel mode = case mode of
   DailyMix -> "Daily Mix"
-  GateOnly -> "Gate"
-  TraceOnly -> "Trace"
-  ReadOnly -> "Read"
+  GateOnly -> "Claim Gate"
+  TraceOnly -> "Trace Stack"
+  ReadOnly -> "Dense Read"
 
 drillLabel :: Drill -> String
 drillLabel drill = case drill of
-  Gate -> "Gate"
-  Trace -> "Trace"
-  Read -> "Read"
+  Gate -> "Claim Gate"
+  Trace -> "Trace Stack"
+  Read -> "Dense Read"
 
 drillClass :: Drill -> String
 drillClass drill = case drill of

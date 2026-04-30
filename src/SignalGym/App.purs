@@ -43,7 +43,7 @@ import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import SignalGym.Storage (loadProfile, saveProfile)
 import SignalGym.Training as Training
-import SignalGym.Training (Mode(..), Profile, Session, Stage(..))
+import SignalGym.Training (Drill(..), Mode(..), Profile, Session, Stage(..))
 
 type Model =
   { profile :: Profile
@@ -159,10 +159,10 @@ dashboard :: Model -> Html Msg
 dashboard model =
   section [ class_ "dashboard" ]
     [ div [ class_ "mode-grid" ]
-        [ modeCard DailyMix "Daily Mix" "3 drills / 12 rounds" "mixed" model.profile
-        , modeCard GateOnly "Gate" "claim drift" "gate" model.profile
-        , modeCard TraceOnly "Trace" "token stack" "trace" model.profile
-        , modeCard ReadOnly "Read" "dense recall" "read" model.profile
+        [ modeCard DailyMix "Daily Mix" "audit + trace + recall" "mixed" model.profile
+        , modeCard GateOnly "Claim Gate" "catch unsafe claims" "gate" model.profile
+        , modeCard TraceOnly "Trace Stack" "hold token order" "trace" model.profile
+        , modeCard ReadOnly "Dense Read" "hide text, recall structure" "read" model.profile
         ]
     , section [ class_ "status-band" ]
         [ profilePanel model.profile
@@ -182,7 +182,7 @@ modeCard mode titleText subtitle theme profile =
     , onClick (Start mode)
     , ariaPressed false
     ]
-    [ span [ class_ "mode-kicker" ] [ text (Training.modeLabel mode) ]
+    [ span [ class_ "mode-kicker" ] [ text (modeKicker mode) ]
     , span [ class_ "mode-title" ] [ text titleText ]
     , span [ class_ "mode-subtitle" ] [ text subtitle ]
     , span [ class_ "mode-level" ] [ text (modeLevel mode profile) ]
@@ -232,6 +232,7 @@ sessionView profile session =
                   ]
               ]
           , progressRail session
+          , drillMap round.drill session.stage
           , div [ class_ "arena" ]
               [ timerBlock session
               , stimulusBlock session round
@@ -244,30 +245,41 @@ stimulusBlock :: Session -> Training.Round -> Html Msg
 stimulusBlock session round =
   div [ class_ ("stimulus " <> (if session.stage == Encoding then "open" else "closed")) ]
     [ div [ class_ "stimulus-head" ]
-        [ span [] [ text (Training.levelLabel round.load) ]
+        [ span [] [ text (stimulusLabel round.drill) ]
+        , span [] [ text (Training.levelLabel round.load) ]
         , span [] [ text (stageLabel session.stage) ]
         ]
     , if session.stage == Encoding then
         p [] [ text round.stimulus ]
       else
         div [ class_ "memory-mask" ]
-          [ span [] [ text "encoded" ]
-          , span [] [ text "######" ]
+          [ span [] [ text (maskLabel round.drill) ]
+          , span [] [ text (maskGlyph round.drill) ]
           ]
     , if session.stage == Encoding then
-        button [ class_ "primary-action", onClick HideStimulus ] [ text "Hide and answer" ]
+        button [ class_ "primary-action", onClick HideStimulus ] [ text (hideActionLabel round.drill) ]
       else
         fragment []
     ]
 
 promptBlock :: Session -> Training.Round -> Html Msg
 promptBlock session round =
-  div [ class_ "prompt-panel" ]
-    [ p [ class_ "prompt" ] [ text round.prompt ]
-    , div [ class_ "option-grid", role "list" ]
-        (Array.mapWithIndex (optionButton session round) round.options)
-    , feedbackBlock session
-    ]
+  if session.stage == Encoding then
+    div [ class_ "prompt-panel locked" ]
+      [ span [ class_ "answer-kicker" ] [ text (answerKicker round.drill) ]
+      , div [ class_ "locked-answer" ]
+          [ span [] [ text "LOCKED" ]
+          , small [] [ text (lockedPromptLabel round.drill) ]
+          ]
+      ]
+  else
+    div [ class_ "prompt-panel" ]
+      [ span [ class_ "answer-kicker" ] [ text (answerKicker round.drill) ]
+      , p [ class_ "prompt" ] [ text round.prompt ]
+      , div [ class_ "option-grid", role "list" ]
+          (Array.mapWithIndex (optionButton session round) round.options)
+      , feedbackBlock session
+      ]
 
 optionButton :: Session -> Training.Round -> Int -> Training.Option -> Html Msg
 optionButton session round index option =
@@ -290,7 +302,7 @@ optionButton session round index option =
   in
     button
       [ key ("option-" <> show index)
-      , class_ ("option-button" <> stateClass)
+      , class_ ("option-button " <> Training.drillClass round.drill <> stateClass)
       , disabled (session.stage /= Answering)
       , onClick (Pick index)
       ]
@@ -386,6 +398,88 @@ levelRow label value theme =
     , strongText (Training.levelLabel value)
     ]
 
+drillMap :: Drill -> Stage -> Html Msg
+drillMap drill stage =
+  div [ class_ ("drill-map " <> Training.drillClass drill) ]
+    (Array.mapWithIndex (stepCell stage) (drillSteps drill))
+
+stepCell :: Stage -> Int -> { label :: String, detail :: String } -> Html Msg
+stepCell stage index item =
+  div [ class_ ("step-cell " <> stepState stage index) ]
+    [ span [] [ text item.label ]
+    , small [] [ text item.detail ]
+    ]
+
+stepState :: Stage -> Int -> String
+stepState stage index =
+  let
+    activeIndex =
+      case stage of
+        Encoding -> 0
+        Answering -> 2
+        Feedback -> 2
+        Complete -> 2
+  in
+    if index < activeIndex then "done"
+    else if index == activeIndex then "active"
+    else "upcoming"
+
+drillSteps :: Drill -> Array { label :: String, detail :: String }
+drillSteps drill = case drill of
+  Gate ->
+    [ { label: "Evidence", detail: "source facts" }
+    , { label: "Claim", detail: "risky leap" }
+    , { label: "Stop", detail: "block decision" }
+    ]
+
+  Trace ->
+    [ { label: "Sequence", detail: "ordered tokens" }
+    , { label: "Mask", detail: "no lookup" }
+    , { label: "Recall", detail: "target position" }
+    ]
+
+  Read ->
+    [ { label: "Passage", detail: "dense meaning" }
+    , { label: "Hidden", detail: "no visual search" }
+    , { label: "Recall", detail: "memory answer" }
+    ]
+
+stimulusLabel :: Drill -> String
+stimulusLabel drill = case drill of
+  Gate -> "Evidence packet"
+  Trace -> "Token stream"
+  Read -> "Dense passage"
+
+maskLabel :: Drill -> String
+maskLabel drill = case drill of
+  Gate -> "evidence sealed"
+  Trace -> "sequence held"
+  Read -> "passage hidden"
+
+maskGlyph :: Drill -> String
+maskGlyph drill = case drill of
+  Gate -> "STOP?"
+  Trace -> "######"
+  Read -> "RECALL"
+
+hideActionLabel :: Drill -> String
+hideActionLabel drill = case drill of
+  Gate -> "Seal evidence and audit"
+  Trace -> "Hide sequence"
+  Read -> "Hide passage and recall"
+
+answerKicker :: Drill -> String
+answerKicker drill = case drill of
+  Gate -> "Stop reason"
+  Trace -> "Sequence check"
+  Read -> "Recall check"
+
+lockedPromptLabel :: Drill -> String
+lockedPromptLabel drill = case drill of
+  Gate -> "stop choices after sealed evidence"
+  Trace -> "recall choices after hidden sequence"
+  Read -> "recall choices after hidden passage"
+
 modeLevel :: Mode -> Profile -> String
 modeLevel mode profile = case mode of
   DailyMix ->
@@ -399,6 +493,13 @@ modeLevel mode profile = case mode of
 
   ReadOnly ->
     Training.levelLabel profile.readLevel
+
+modeKicker :: Mode -> String
+modeKicker mode = case mode of
+  DailyMix -> "Daily Mix"
+  GateOnly -> "Audit drill"
+  TraceOnly -> "Memory drill"
+  ReadOnly -> "Reading drill"
 
 stageLabel :: Stage -> String
 stageLabel stage = case stage of
