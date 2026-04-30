@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Signal Gym mark">
+  <rect width="128" height="128" rx="18" fill="#fffdf9"/>
+  <path d="M24 88h80" stroke="#18212f" stroke-width="8" stroke-linecap="round"/>
+  <path d="M30 74 52 36l23 52 18-28 11 14" fill="none" stroke="#1f7a8c" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="52" cy="36" r="8" fill="#8a5a16"/>
+  <circle cx="75" cy="88" r="8" fill="#6f4fb2"/>
+  <path d="M24 104h80" stroke="#d8d3c8" stroke-width="6" stroke-linecap="round"/>
+</svg>

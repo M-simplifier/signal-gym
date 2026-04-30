@@ -1,0 +1,20 @@
+package:
+  name: signal-gym
+  dependencies:
+    - arrays
+    - asterism
+    - effect
+    - foldable-traversable
+    - maybe
+    - prelude
+    - strings
+  test:
+    main: Test.Main
+    dependencies:
+      - assert
+workspace:
+  packageSet:
+    registry: 73.3.0
+  extraPackages:
+    asterism:
+      path: ../asterism

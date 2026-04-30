@@ -1,0 +1,26 @@
+# deny local/runtime outputs by default
+node_modules/
+output/
+.spago/
+dist/
+.local/
+.cache/
+
+# local configuration and secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# package manager diagnostics
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

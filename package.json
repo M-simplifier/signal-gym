@@ -1,0 +1,43 @@
+{
+  "name": "signal-gym",
+  "version": "0.1.0",
+  "description": "A local-first PureScript SPA for AI-era attention, working-memory, and dense-reading practice.",
+  "keywords": [
+    "purescript",
+    "cognitive-training",
+    "working-memory",
+    "attention",
+    "reading",
+    "github-pages"
+  ],
+  "author": "M-simplifier",
+  "license": "MIT",
+  "type": "commonjs",
+  "homepage": "https://m-simplifier.github.io/signal-gym/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/M-simplifier/signal-gym.git"
+  },
+  "bugs": {
+    "url": "https://github.com/M-simplifier/signal-gym/issues"
+  },
+  "scripts": {
+    "check": "HOME=/tmp XDG_CACHE_HOME=/tmp/.cache npx spago test",
+    "build:purs": "HOME=/tmp XDG_CACHE_HOME=/tmp/.cache npx spago bundle --bundle-type app --platform browser --module SignalGym.Main --outfile dist/app.js",
+    "build": "npm run build:purs && node scripts/prepare-dist.mjs",
+    "preview": "vite --host 127.0.0.1 --port 4174 dist",
+    "smoke": "node scripts/smoke.mjs",
+    "screenshot": "node scripts/capture.mjs",
+    "verify": "npm run check && npm run build && npm run smoke"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.3",
+    "playwright": "^1.58.2",
+    "purescript": "^0.15.16",
+    "spago": "^1.0.3",
+    "vite": "^8.0.0"
+  }
+}
