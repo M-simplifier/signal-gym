@@ -41,6 +41,7 @@ import Asterism
   )
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
+import SignalGym.Random (randomSeed)
 import SignalGym.Storage (loadProfile, saveProfile)
 import SignalGym.Training as Training
 import SignalGym.Training (Drill(..), Mode(..), Profile, Session, Stage(..))
@@ -54,6 +55,7 @@ type Model =
 data Msg
   = Loaded Profile
   | Start Mode
+  | Begin Mode Int
   | Tick
   | HideStimulus
   | Pick Int
@@ -92,7 +94,10 @@ evolve msg model =
       quiet (model { profile = profile, loaded = true })
 
     Start mode ->
-      quiet (model { session = Just (Training.startSession model.profile mode) })
+      withBursts [ perform (Begin mode <$> randomSeed) ] (quiet model)
+
+    Begin mode seed ->
+      quiet (model { session = Just (Training.startSessionWithSeed model.profile mode seed) })
 
     Tick ->
       quiet (model { session = map Training.tickSession model.session })
@@ -246,6 +251,7 @@ stimulusBlock session round =
   div [ class_ ("stimulus " <> (if session.stage == Encoding then "open" else "closed")) ]
     [ div [ class_ "stimulus-head" ]
         [ span [] [ text (stimulusLabel round.drill) ]
+        , span [] [ text round.domain ]
         , span [] [ text (Training.levelLabel round.load) ]
         , span [] [ text (stageLabel session.stage) ]
         ]
@@ -416,7 +422,7 @@ stepState stage index =
     activeIndex =
       case stage of
         Encoding -> 0
-        Answering -> 2
+        Answering -> 1
         Feedback -> 2
         Complete -> 2
   in
@@ -434,13 +440,13 @@ drillSteps drill = case drill of
 
   Trace ->
     [ { label: "Sequence", detail: "ordered tokens" }
-    , { label: "Mask", detail: "no lookup" }
+    , { label: "Prompt", detail: "target cue" }
     , { label: "Recall", detail: "target position" }
     ]
 
   Read ->
     [ { label: "Passage", detail: "dense meaning" }
-    , { label: "Hidden", detail: "no visual search" }
+    , { label: "Prompt", detail: "after hiding" }
     , { label: "Recall", detail: "memory answer" }
     ]
 

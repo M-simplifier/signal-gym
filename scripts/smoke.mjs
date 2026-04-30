@@ -23,6 +23,7 @@ const publicTextFiles = [
   "README.md",
   "STATUS.md",
   "PUBLICATION_AUDIT.md",
+  "docs/content-refresh-agent-pack.md",
   "docs/research-notes.md",
   "docs/design.md",
   "src/SignalGym/App.purs",

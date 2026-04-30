@@ -40,6 +40,15 @@ The drill names must not hide the task contract.
 
 If two drills feel like the same multiple-choice surface, the UI has failed even if the answer data differs.
 
+## Content And Randomness
+
+The exercise corpus should resist template memorization.
+
+- Gate and Read materials are synthetic, objective, and tagged by domain.
+- Session start uses a local random seed; no backend, account, telemetry, or remote model call is involved.
+- Case order and answer position are shuffled per session so repeated practice does not simply become array-order recall.
+- Trace Stack generates token streams from the session seed instead of replaying a fixed sequence.
+
 ## Rejected But Valuable
 
 - User-imported AI documents: high transfer value, but needs privacy and prompt-safety design.
